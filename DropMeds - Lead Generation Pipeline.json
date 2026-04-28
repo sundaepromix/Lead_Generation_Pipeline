@@ -1,0 +1,1021 @@
+{
+  "name": "DropMeds - Lead Generation Pipeline",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "49dfe4c6-12c1-44e8-ac50-30aa193d550a",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1952,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "bc40d79a-353e-4244-8996-3bb3e792e844",
+      "name": "Schedule - Daily 8am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1952,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAllRowData",
+        "documentId": {
+          "__rl": true,
+          "value": "1QzcdEKaTypHMJR_4S8eQ0ZQ5wNTahylkGWXEWYCKioY",
+          "mode": "id"
+        }
+      },
+      "id": "939288b3-35cb-4dae-ba6e-13b7805f6402",
+      "name": "Google Sheets - Read Leads",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -1712,
+        336
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yGzS74HZFmE39yzP",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "email",
+              "type": "string"
+            },
+            {
+              "name": "firstName",
+              "type": "string"
+            },
+            {
+              "name": "lastName",
+              "type": "string"
+            },
+            {
+              "name": "fullName",
+              "type": "string"
+            },
+            {
+              "name": "company",
+              "type": "string"
+            },
+            {
+              "name": "phone",
+              "type": "string"
+            },
+            {
+              "name": "leadSource",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8de80856-3f32-4f47-874a-c512ad2d5fe2",
+      "name": "Set - Normalise Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -1472,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-email-present",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "name": "filter.operator.notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4736c01f-ca40-4796-b527-d7e6b54273ee",
+      "name": "IF - Email Present?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1232,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.kickbox.com/v2/verify",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "={{ $json.email }}"
+            },
+            {
+              "name": "apikey",
+              "value": "live_key"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "34afbabc-3a35-4195-820b-88d0857af8c4",
+      "name": "HTTP - Kickbox Verify Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -992,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "email",
+              "type": "string"
+            },
+            {
+              "name": "firstName",
+              "type": "string"
+            },
+            {
+              "name": "lastName",
+              "type": "string"
+            },
+            {
+              "name": "fullName",
+              "type": "string"
+            },
+            {
+              "name": "company",
+              "type": "string"
+            },
+            {
+              "name": "phone",
+              "type": "string"
+            },
+            {
+              "name": "leadSource",
+              "type": "string"
+            },
+            {
+              "name": "emailVerified",
+              "type": "string"
+            },
+            {
+              "name": "kickboxResult",
+              "type": "string"
+            },
+            {
+              "name": "enriched_companyName",
+              "type": "string"
+            },
+            {
+              "name": "enriched_industry",
+              "type": "string"
+            },
+            {
+              "name": "leadScore",
+              "type": "number"
+            },
+            {
+              "name": "leadTier",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "00e1bb0a-0cfa-43b1-be56-ee70c0baedfe",
+      "name": "Set - Enrich and Score Lead",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -752,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-hot-lead",
+              "leftValue": "={{ $json.leadScore }}",
+              "rightValue": 60,
+              "operator": {
+                "type": "number",
+                "operation": "gte",
+                "name": "filter.operator.gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f6515308-d1e2-4b83-a875-e812a537c67b",
+      "name": "IF - Hot Lead (Score >= 60)?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app(your id)",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblScuUi1moO0QYbi",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.fullName }}",
+            "Email": "={{ $json.email }}",
+            "Phone": "={{ $json.phone }}",
+            "status": "=Hot",
+            "notes": "=Score: {{ $json.leadScore }}/100 | Tier: {{ $json.leadTier }} | Source: {{ $json.leadSource }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "843ac8de-a57b-42be-b907-be7299fa03bb",
+      "name": "Airtable - Save Hot Lead to CRM",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        -272,
+        112
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "cMhRd770jU2L9VqB",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "=Quick question for {{ $json.firstName }} at {{ $json.enriched_companyName }}",
+        "message": "=<html>\n<body style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;\">\n\n<p>Hi {{ $json.firstName }},</p>\n\n<p>I came across <strong>{{ $json.enriched_companyName }}</strong> and wanted to reach out personally — I think there's a strong fit here.</p>\n\n<p>I'm Promise, COO at <strong>DropMeds</strong>. We help {{ $json.enriched_industry }} companies automate their lead pipelines and sales outreach — so your team only ever speaks to qualified, ready-to-buy prospects.</p>\n\n<p>Here's what that looks like in practice:</p>\n<ul style=\"padding-left: 20px;\">\n  <li>Leads verified and scored automatically within seconds</li>\n  <li>Personalised emails sent before your competitor even sees the lead</li>\n  <li>CRM updated in real time — zero manual data entry</li>\n</ul>\n\n<p>Would you be open to a quick 30-minute call this week? No sales pitch — just a honest conversation about whether this makes sense for {{ $json.enriched_companyName }}.</p>\n\n<p style=\"margin: 28px 0;\">\n  <a href=\"https://your_calendy_link/min\"\n     style=\"background:#0066cc; color:white; padding:12px 24px; border-radius:6px; text-decoration:none; font-weight:bold;\">\n    Book a Free 30-min Call\n  </a>\n</p>\n\n<p>Best,<br/>\n<strong>your-name</strong><br/>\nCOO &middot; DropMeds<br/>\n+234 912663</p>\n\n<hr style=\"border:none; border-top:1px solid #eee; margin-top:32px;\"/>\n<p style=\"font-size:11px; color:#999;\">You're receiving this because your contact details were shared with us. Reply STOP to unsubscribe at any time.</p>\n\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "8abed9b5-f798-4fa2-acf2-d7029dba1c67",
+      "name": "Gmail - Send Hot Lead Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        -272,
+        256
+      ],
+      "webhookId": "d4477fc8-09bb-4e16-992f-8c7bbabff4d0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "kDurGCnwLClw5JIK",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#general",
+          "mode": "name"
+        },
+        "text": "=:fire: *New HOT Lead — Follow up within 2 hours!*\n\n:bust_in_silhouette: *Name:* {{ $json.fullName }}\n:email: *Email:* {{ $json.email }}\n:office: *Company:* {{ $json.enriched_companyName }}\n:factory: *Industry:* {{ $json.enriched_industry }}\n:phone: *Phone:* {{ $json.phone || 'Not provided' }}\n:bar_chart: *Score:* {{ $json.leadScore }}/100\n:label: *Tier:* {{ $json.leadTier }}\n:mega: *Source:* {{ $json.leadSource }}\n:white_check_mark: *Email Verified:* {{ $json.emailVerified }}\n\n_Outreach email sent automatically. Strike while hot!_",
+        "otherOptions": {}
+      },
+      "id": "21196214-2d66-4336-aa75-7c50fba7d514",
+      "name": "Slack - Alert Sales Team",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [
+        -272,
+        400
+      ],
+      "webhookId": "dfb04483-79b7-4476-9b80-2536f07c386d",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "UsyZAuF6ZBIAqMo4",
+          "name": "Slack OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "16EJYqZjWsW7c-rq3pcn5K6IQbPlgb3pA5-e4IaZC_s4",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "395325636",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestap": "={{ new Date().toISOString() }}",
+            "Email": "={{ $json.email }}",
+            "First Name": "={{ $json.firstName }}",
+            "Last Name": "={{ $json.lastName }}",
+            "Company": "={{ $json.enriched_companyName }}",
+            "Industry": "={{ $json.enriched_industry }}",
+            "Lead Score": "={{ $json.leadScore }}",
+            "Lead Tier": "={{ $json.leadTier }}",
+            "Source": "={{ $json.leadSource }}",
+            "Email Verified": "={{ $json.emailVerified }}",
+            "Action Taken": "=Hot lead — outreach email sent"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestap",
+              "displayName": "Timestap",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Lead Score",
+              "displayName": "Lead Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Lead Tier",
+              "displayName": "Lead Tier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Email Verified",
+              "displayName": "Email Verified",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Action Taken",
+              "displayName": "Action Taken",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "c22933e7-d069-40a5-84c4-3b0c3d12be4f",
+      "name": "Google Sheets - Log Hot Lead",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -32,
+        256
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yGzS74HZFmE39yzP",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.fullName }}",
+            "Email": "={{ $json.email }}",
+            "Phone": "={{ $json.phone }}",
+            "status": "=Warm",
+            "notes": "=Score: {{ $json.leadScore }}/100 | Tier: {{ $json.leadTier }} | Source: {{ $json.leadSource }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c22737ce-1ef5-49d9-84ae-aad847733df1",
+      "name": "Airtable - Save Warm Lead to CRM",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        -272,
+        512
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "cMhRd770jU2L9VqB",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "days"
+      },
+      "id": "76cad6e7-19f2-47ea-bb29-1cd3033037a7",
+      "name": "Wait - 3 Days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        656
+      ],
+      "webhookId": "wait-3days-webhook"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "=Still thinking it over, {{ $json.firstName }}?",
+        "message": "=<html>\n<body style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;\">\n\n<p>Hi {{ $json.firstName }},</p>\n\n<p>I reached out a few days ago — just wanted to follow up in case it got buried.</p>\n\n<p>Here's a result from a recent client in the {{ $json.enriched_industry }} space:</p>\n\n<blockquote style=\"border-left: 4px solid #0066cc; margin: 20px 0; padding: 12px 20px; background: #f4f8ff; border-radius: 4px; color: #444;\">\n\"We cut our manual lead handling time from 4 hours a day to zero. The pipeline just runs itself.\"\n<br/><em>— Operations Lead, B2B SaaS</em>\n</blockquote>\n\n<p>If the timing isn't right, no problem at all — just reply and I'll check back in a month.</p>\n\n<p>But if you're even a little curious, let's get 30 minutes on the calendar:</p>\n\n<p style=\"margin: 28px 0;\">\n  <a href=\"https://calendly.com/sundaepromix/30min\"\n     style=\"background:#0066cc; color:white; padding:12px 24px; border-radius:6px; text-decoration:none; font-weight:bold;\">\n    Grab 30 Mins With Promise\n  </a>\n</p>\n\n<p>Hope things are going well at {{ $json.enriched_companyName }}.</p>\n\n<p>Best,<br/>\n<strong>Promise</strong><br/>\nCOO &middot; DropMeds<br/>\n+234 912663</p>\n\n<hr style=\"border:none; border-top:1px solid #eee; margin-top:32px;\"/>\n<p style=\"font-size:11px; color:#999;\">Reply STOP to unsubscribe.</p>\n\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "7f8fdeb8-93d1-4ee3-8f5e-a585a1675add",
+      "name": "Gmail - Nurture Follow-up (Day 3)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        656
+      ],
+      "webhookId": "705e2698-66db-4a6b-8ba2-e64d91e3e28c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "kDurGCnwLClw5JIK",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "16EJYqZjWsW7c-rq3pcn5K6IQbPlgb3pA5-e4IaZC_s4",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "395325636",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestap": "={{ new Date().toISOString() }}",
+            "Email": "={{ $json.email }}",
+            "First Name": "={{ $json.firstName }}",
+            "Last Name": "={{ $json.lastName }}",
+            "Company": "={{ $json.enriched_companyName }}",
+            "Industry": "={{ $json.enriched_industry }}",
+            "Lead Score": "={{ $json.leadScore }}",
+            "Lead Tier": "={{ $json.leadTier }}",
+            "Source": "={{ $json.leadSource }}",
+            "Email Verified": "={{ $json.emailVerified }}",
+            "Action Taken": "=Warm lead — nurture follow-up sent (Day 3)"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestap",
+              "displayName": "Timestap",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "First Name",
+              "displayName": "First Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Last Name",
+              "displayName": "Last Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Industry",
+              "displayName": "Industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Lead Score",
+              "displayName": "Lead Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Lead Tier",
+              "displayName": "Lead Tier",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Email Verified",
+              "displayName": "Email Verified",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "Action Taken",
+              "displayName": "Action Taken",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "27f6fe36-3108-47b9-b51b-54bbbdbbb278",
+      "name": "Google Sheets - Log Nurture Lead",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        208,
+        656
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "yGzS74HZFmE39yzP",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Google Sheets - Read Leads": [
+      {
+        "json": {
+          "email": "james.okonkwo@scalepeak.io",
+          "first_name": "James",
+          "last_name": "Okonkwo",
+          "company": "ScalePeak Technologies",
+          "phone": "+2348031245678",
+          "source": "google_ads"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Read Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule - Daily 8am": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Read Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets - Read Leads": {
+      "main": [
+        [
+          {
+            "node": "Set - Normalise Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set - Normalise Fields": {
+      "main": [
+        [
+          {
+            "node": "IF - Email Present?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Email Present?": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Kickbox Verify Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Kickbox Verify Email": {
+      "main": [
+        [
+          {
+            "node": "Set - Enrich and Score Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set - Enrich and Score Lead": {
+      "main": [
+        [
+          {
+            "node": "IF - Hot Lead (Score >= 60)?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Hot Lead (Score >= 60)?": {
+      "main": [
+        [
+          {
+            "node": "Airtable - Save Hot Lead to CRM",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Gmail - Send Hot Lead Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Slack - Alert Sales Team",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Airtable - Save Warm Lead to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Send Hot Lead Email": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Log Hot Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable - Save Warm Lead to CRM": {
+      "main": [
+        [
+          {
+            "node": "Wait - 3 Days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait - 3 Days": {
+      "main": [
+        [
+          {
+            "node": "Gmail - Nurture Follow-up (Day 3)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - Nurture Follow-up (Day 3)": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets - Log Nurture Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "62c8c358-9d1a-48cd-a2b0-78b32bbc0c8c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d1f0ecb54a679f9dd366f002c9728cb4acea394fdf6a47cf7814bcf4e5bb2c33"
+  },
+  "id": "dUM44lI14qCjpOWD",
+  "tags": []
+}
